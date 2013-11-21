@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   width="1052.3622"
+   height="744.09448"
+   id="svg2"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="axes.svg">
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1176"
+     id="namedview13"
+     showgrid="false"
+     inkscape:zoom="0.64"
+     inkscape:cx="655.80833"
+     inkscape:cy="339.16535"
+     inkscape:window-x="1280"
+     inkscape:window-y="24"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs4" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer1"
+     transform="translate(13.377485,-317.18602)">
+    <rect
+       width="250.61086"
+       height="58.334072"
+       x="45.632072"
+       y="467.86032"
+       id="control1"
+       style="fill:none;stroke:#000000;stroke-width:0.83557498px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1">
+      <title
+         id="title2997">controls</title>
+    </rect>
+    <rect
+       width="561.17377"
+       height="296.48627"
+       x="330.306"
+       y="390.79318"
+       id="rect2987"
+       style="fill:none;stroke:#000000;stroke-width:1.43338597px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <rect
+       width="135.68015"
+       height="102.86765"
+       x="655.67566"
+       y="432.34781"
+       id="rect2989"
+       style="fill:none;stroke:#000000;stroke-width:0.5877099px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <rect
+       width="622.16522"
+       height="227.7009"
+       x="333.70621"
+       y="757.88257"
+       id="rect2991"
+       style="fill:none;stroke:#000000;stroke-width:1.37944973px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <rect
+       width="255.7704"
+       height="469.83289"
+       x="40.490463"
+       y="539.30103"
+       id="rect2993"
+       style="fill:none;stroke:#000000;stroke-width:1.52425385px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <rect
+       width="250.80203"
+       height="97.75312"
+       x="382.64386"
+       y="433.4487"
+       id="rect2995"
+       style="fill:none;stroke:#000000;stroke-width:0.50027442px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <rect
+       width="250.61086"
+       height="58.334072"
+       x="51.942085"
+       y="383.67596"
+       id="control1-3"
+       style="fill:none;stroke:#000000;stroke-width:0.83557498px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1">
+      <title
+         id="title2997-3">controls</title>
+    </rect>
+  </g>
+</svg>
