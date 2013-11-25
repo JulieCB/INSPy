@@ -1,3 +1,11 @@
+"""
+ins.detection
+=============
+
+Functions to perform automatic detection of events on continuous data.
+
+
+"""
 
 from numpy import *
 from scipy import stats, signal, optimize
@@ -57,7 +65,7 @@ def lfdr(x, nbins=50, doplot=True):
     cf = stats.norm.pdf(xb, loc=mu, scale=sig)
     cf = cf/cf.max()*f.max()
         
-    # computer lfdr & transform data to log-lfdr
+    # compute lfdr & transform data to log-lfdr
     fdr = clip(cf/f, 0.0, 1.0)
     llx = interp(x, xb, log(fdr))
 
@@ -124,11 +132,11 @@ def detect(t, y, flo=15., fhi=40., q=1e-5, minel=0.05, maxel=0.5, rf=0.5, info=F
     fy = signal.filtfilt(b, a, diff(y))
     
     # analyze distribution
-    xb, f, cf, lfdr, llx = lfdr(fy, doplot=False)
+    xb, f, cf, fdr, llx = lfdr(fy, doplot=False)
     
-    # lfdr tarnsform hilbert 
+    # fdr tarnsform hilbert 
     hy = abs(signal.hilbert(fy))
-    llh = interp(hy, xb, log(lfdr))
+    llh = interp(hy, xb, log(fdr))
     
     # generate events    
     ev = c_[isfinite(llh), llh < log(q)].all(axis=1)
@@ -169,3 +177,29 @@ def detect(t, y, flo=15., fhi=40., q=1e-5, minel=0.05, maxel=0.5, rf=0.5, info=F
     nfpeak = array(peaks)[array(nonmask), 1]
     
     return locals() if info else nfpeak
+
+
+def review_detection(t, y, info):
+
+    peaks = info['nfpeak']
+    mark = lambda t: axvline(t, color='r', alpha=0.5)
+
+    fig = figure()
+    ax = subplot(311)
+    plot(ica.t, ica.ys[0], 'k')
+    xlim([0, 10]), grid(True), xticks(r_[:int(ica.t.max())], [])
+    map(mark, peaks)
+
+    subplot(312, sharex=ax)
+    plot(ica.t[:-1], info['fy'], 'k')
+    plot(ica.t[:-1], info['hy'], 'k')
+    xlim([0, 10]), grid(True), xticks(r_[:int(ica.t.max())], [])
+    map(mark, peaks)
+
+    subplot(313, sharex=ax)
+    plot(ica.t[:-1], info['llh'], 'k')
+    xt = r_[:int(ica.t.max())]
+    grid(True), xticks(xt, map(str, xt)), xlim([0, 10])
+    map(mark, peaks)
+
+    tight_layout()

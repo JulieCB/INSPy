@@ -8,66 +8,11 @@ from pyqtgraph.Qt import QtCore, QtGui
 from scipy import interpolate, io
 from matplotlib import cm
 
-class Layout(object):
+from ins.data import tvb
+from ins.data.layout import FTLayout
+from ins.ui.forward import GridFwd
 
-    def __init__(self, path):
-        self.path = path
-        self.read_layout()
-
-    def find_data_order(self, data_labels):
-        ix = []
-        dl = [l.lower() for l in data_labels]
-        for l in self.labels:
-            l = l.lower()
-            ix.append(dl.index(l) if l in dl else -1)
-        return np.r_[:len(self.labels)], np.array(ix)
-
-class FTLayout(Layout):
-    def read_layout(self):
-        self.labels = []
-        self.points = []
-        with open(self.path, 'r') as fd:
-            for line in fd.readlines():
-                _, x, y, _, _, name = line.strip().split()
-                self.labels.append(name.lower())
-                self.points.append(map(float, (x, y)))
-        print self.labels
-        self.points = np.array(self.points)
-        self.px, self.py = self.points.T
-
-class GridFwd(object):
-
-    def _set_ngrid(self, ngrid):
-        if not 2 < ngrid < 500:
-            raise AttributeError('unexpected ngrid %d' % (ngrid,))
-        self._ngrid = ngrid
-        l = self.lay
-        self.X, self.Y = np.mgrid[l.px.min() : l.px.max() : 1j*ngrid, l.py.min() : l.py.max() : 1j*ngrid]
-        self.XY = np.c_[self.X.flat, self.Y.flat]
-
-    ngrid = property(lambda s: s._ngrid, _set_ngrid)
-
-    def __init__(self, lay, gain, labels, ngrid=100):
-        self.lay = lay
-        self.gain = gain
-        self.labels = labels
-        self.lix, self.dix = lay.find_data_order(labels)
-        print self.dix.shape, np.isfinite(gain).all(axis=1).shape
-        data_mask = self.dix >= 0
-        print 'data_mask', data_mask.sum()
-        gain_mask = np.zeros(self.dix.shape)
-        gain_mask[data_mask] = np.isfinite(gain).all(axis=1)
-        print 'gain_mask', gain_mask.sum()
-        self.mask = data_mask #np.c_[data_mask, gain_mask].all(axis=1)
-        self.ngrid = ngrid
-
-    def gridded(self, surf):
-        fwd = np.zeros((self.lay.points.shape[0],))
-        fwd_ = self.gain.dot(surf)
-        fwd[self.mask] = fwd_[self.dix[self.mask]]
-        return interpolate.griddata(self.lay.points, fwd, self.XY, fill_value=0.0).reshape(self.X.shape)
-
-class Viz(object):
+class SurfaceTime(object):
 
     def __init__(self, surf_h5, fs, fwd_eeg, fwd_meg):
         self.fs = fs
@@ -105,8 +50,8 @@ class Viz(object):
         self.surf_vw = gl.GLViewWidget()
         self.surf_vw.setCameraPosition(distance=120)
 
-        self.surf_verts = np.load('/home/duke/tvb-vert.npy')
-        self.surf_faces = np.load('/home/duke/tvb-tri.npy')
+        self.surf_verts = tvb.cortex_reg13.surf_verts
+        self.surf_faces = tvb.cortex_reg13.surf_faces
         self.surf_nv = self.surf_verts.shape[0]
         self.surf_colors = np.zeros((self.surf_nv, 4))
 
@@ -123,10 +68,11 @@ class Viz(object):
         self.fwd_surf_split = QtGui.QSplitter()
         self.fwd_surf_split.addWidget(self.fwd_split)
         self.fwd_surf_split.addWidget(self.surf_vw)
+        self.fwd_surf_split.setSizes([400, 400])
         self.main_split = QtGui.QSplitter(QtCore.Qt.Vertical)
         self.main_split.addWidget(self.fwd_surf_split)
         self.main_split.addWidget(self.time)
-        self.main_split.setSizes([0.9, 0.1])
+        self.main_split.setSizes([400, 50])
         
         # TODO self.main_split set weights?
 
@@ -144,7 +90,37 @@ class Viz(object):
         self.surf_colors[:] = cm.jet(st)
         self.surf_data.setVertexColors(self.surf_colors)
         self.surf_mesh.meshDataChanged()
+
+    def advance(self):
+        vb = self.time.getViewBox()
+        (xl, xh), (yl, yh) = vb.viewRange()
+        newt = self.il_time.value() + (xh - xl)/1e3
+        self.il_time.setValue(newt)
+        if (newt - xl)/(xh - xl) > 0.8:
+            dt = 0.6*(xh - xl)
+            vb.setRange(xRange=(xl + dt, xh + dt))
         
+class SurfaceWindow(QtGui.QMainWindow):
+
+    _play_status = False
+
+    def __init__(self, *surfargs):
+        super(SurfaceWindow, self).__init__()
+        self.surface = SurfaceTime(*surfargs)
+        self.setCentralWidget(self.surface.main_split)
+        self.play_timer = QtCore.QTimer()
+        self.play_timer.timeout.connect(self.maybe_update)
+        self.play_timer.setInterval(1000/15)
+        self.play_timer.start()
+        
+    def keyPressEvent(self, ev):
+        if ev.key() == 32:
+            print 'reversing polarity!'
+            self._play_status = not self._play_status
+
+    def maybe_update(self):
+        if self._play_status:
+            self.surface.advance()
 
 if __name__ == '__main__':
 
@@ -154,24 +130,17 @@ if __name__ == '__main__':
     # open h5 file
     h5 = h5py.File(sys.argv[1])
     
-    lay_eeg = FTLayout('/home/duke/tools/fieldtrip/template/layout/elec1010.lay')
-    lay_meg = FTLayout('/home/duke/tools/fieldtrip/template/layout/4D248.lay')
-
-    meg_labels = io.loadmat('/data/local/tvb-meg-channel-names.mat')['meg_names']
-    meg_labels = [l[0] for l in meg_labels[0]]
-
-    eeg_labels = io.loadmat('/data/local/tvb-eeg-channel-names.mat')['eeg_name']
-    eeg_labels = [l[0] for l in eeg_labels[0]]
-
-    fwds = io.loadmat('/data/local/tvb-lead-fields.mat')
-    
-    fwd_eeg = GridFwd(lay_eeg, fwds['eeg'], eeg_labels)
-    fwd_meg = GridFwd(lay_meg, fwds['meg'], meg_labels)
+    fwd_eeg = GridFwd(FTLayout('elec1010'), tvb.eeg.gains, tvb.eeg.labels)
+    fwd_meg = GridFwd(FTLayout('4D248'), tvb.meg.gains, tvb.meg.labels)
 
     app = QtGui.QApplication([])
-    win = QtGui.QMainWindow()
-    viz = Viz(h5, 512., fwd_eeg, fwd_meg)
-    win.setCentralWidget(viz.main_split)
-    print 'showing!'
+    win = SurfaceWindow(h5, 512., fwd_eeg, fwd_meg)
     win.show()
+    print """
+Instructions:
+
+- drag the time line around to change the time point viewed
+- press spacebar to play back the time series
+- zoom in/out of timeline to move more/less quickly 
+"""
     QtGui.QApplication.instance().exec_()

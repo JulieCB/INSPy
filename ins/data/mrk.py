@@ -14,9 +14,25 @@ We try to do some parsing of the tag as well for
 
 import re
 import numpy
-import pandas
+#import pandas
 
-from ins.util import parse_marker_tag
+#from ins.util import parse_marker_tag
+
+def read_mrk(filename):
+    with open(filename, 'r') as fd:
+        for line in fd.readlines():
+            line = line.strip()
+            if line.startswith(r'\\'):
+                continue
+            tag, val, time = line.strip().split('\t')
+            yield tag, int(val), float(time)
+
+def write_mrk(filename, marks):
+    with open(filename, 'w') as fd:
+        print >> fd, r'\\ AnyWave marker file'
+        for tag, val, time in marks:
+            fd.write('%s\t%d\t%f\n' % (tag, val, time))
+   
 
 class Mrk(object):
 
