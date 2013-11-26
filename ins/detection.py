@@ -10,17 +10,23 @@ Functions to perform automatic detection of events on continuous data.
 from numpy import *
 from scipy import stats, signal, optimize
 
-def lfdr(x, nbins=50, doplot=True):
+def lfdr(x, nbins=50, dc=1, doplot=True):
     """
     Computes density statistics on `x`, where a "null" hypothesis distribution H0,
     here a Gaussian distribution, is fit to the center of the data, and this
     provides an estimation of how likely each bin comes from the Gaussian
     distribution, a measure called the local false discovery rate.
 
+    Decimating the data by specifying `dc` as an integer greater than 1 
+    can accelerate the density estimation and safer on large datasets 
+    where said estimation takes more time.
+
     Parameters
     ----------
     x : array
         Data to analyze
+    dc : int
+        Decimate data, accelerating analysis
     nbins : int or None, optional
         Number of points at which to evaluate the density
 
@@ -39,7 +45,7 @@ def lfdr(x, nbins=50, doplot=True):
 
     """
     
-    k = stats.gaussian_kde(x)
+    k = stats.gaussian_kde(x[::dc])
     xb = r_[x.min() : x.max() : 1j*nbins]
     f = k(xb)
     f /= f.sum()

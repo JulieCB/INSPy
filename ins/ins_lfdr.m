@@ -1,9 +1,13 @@
-function [xb, f, cf, fdr, llx] = ins_lfdr(x, nbins, doplot)
+function [xb, f, cf, fdr, llx] = ins_lfdr(x, nbins, doplot, dc)
 %
 %    Computes density statistics on `x`, where a "null" hypothesis distribution H0,
 %    here a Gaussian distribution, is fit to the center of the data, and this
 %    provides an estimation of how likely each bin comes from the Gaussian
 %    distribution, a measure called the local false discovery rate.
+%
+%    Decimating the data by specifying `dc` as an integer greater than 1 
+%    can accelerate the density estimation and safer on large datasets 
+%    where said estimation takes more time.
 %
 %    Parameters
 %    ----------
@@ -13,6 +17,8 @@ function [xb, f, cf, fdr, llx] = ins_lfdr(x, nbins, doplot)
 %        Number of points at which to evaluate the density
 %    doplot : bool
 %        If true, make plot of densities and lfdr
+%    dc : integer
+%        Decimate data, accelerating estimation
 %
 %    Returns
 %    -------
@@ -27,6 +33,8 @@ function [xb, f, cf, fdr, llx] = ins_lfdr(x, nbins, doplot)
 %    llx : array
 %        Log lfdr for each datapoint in `x`
 %
+% defaults: nbins=50, doplot=1, dc=1
+%
 % mw 11/25/2013 translation from python
 
 
@@ -34,6 +42,7 @@ function [xb, f, cf, fdr, llx] = ins_lfdr(x, nbins, doplot)
 
 if nargin < 2; nbins  = 50; end
 if nargin < 3; doplot =  1; end
+if nargin < 4;     dc =  1; end
 
 %% obtain preliminary estimate of density
 
@@ -43,7 +52,7 @@ if nargin < 3; doplot =  1; end
 % f /= f.sum()
 
 xb = linspace(min(x), max(x), nbins);
-[f, ~] = ksdensity(x, xb);
+[f, ~] = ksdensity(x(1:dc:end), xb);
 f = f / sum(f);
 
 %% update query points where data is dense
@@ -57,7 +66,7 @@ f = f / sum(f);
 dxb = interp1(cumsum(f), xb + (xb(2) - xb(1))/2, linspace(0, 1, nbins));
 xb = unique([ xb(:); dxb(:) ]);
 xb = sort(xb);
-f = ksdensity(x, xb);
+f = ksdensity(x(1:dc:end), xb);
 fin = isfinite(f);
 f = f(fin);
 xb = xb(fin);
