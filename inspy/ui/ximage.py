@@ -10,7 +10,10 @@ pg.setConfigOptions(useWeave=False)
 
 def ask_for_dir():
     cfg = pg.QtCore.QSettings('INS', 'divu.py')
-    path = unicode(cfg.value('dicomdir').toString())
+    try:
+        path = unicode(cfg.value('dicomdir').toString())
+    except:
+        path = ''
     if len(path) == 0:
         path = os.path.expanduser('~')
     newpath = unicode(pg.QtGui.QFileDialog.getExistingDirectory(
