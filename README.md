@@ -1,20 +1,17 @@
-# inspy
+# INSPy
 
-Python toolkit developed at INS
+A collection of tools written in Python at [INS](http://ins.medecine.univmed.fr/) for
+tasks from simulation to data analysis to visualization.
 
-## code quality tools
-
-(reminder to put in place)
+## depends
 
 - pep8, pyflakes, etc.
-- test on commit
-
-
-## dependencies to keep close
-
-- tvb sim
+- tvb simulator
 - pyqtgraph
 - mne-python
 - pyopencl
 - scipy
-- 
+- pywavelets
+- sklearn
+
+
